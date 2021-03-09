@@ -4,11 +4,12 @@
 
 ## Differentially private Shakespeare
 
-Differentially private Shakespeare is a two part demo showing how one party can
-perform a differentially private query across a second parties data. The data
+Differentially private Shakespeare is a two part demo showing how one can
+perform a differentially private query across someone elses data. The data
 in the example is a summary of Shakespeares plays.
 
-Party 1 [uploads](upload-shakespeare-summary) the data, Party 2 performs a [differentially private](dp-shakespeare) query over the data.
+ 1. Alice [uploads](upload-shakespeare-summary) the data,
+ 1. Bob performs a [differentially private](dp-shakespeare) query over the data.
 
 ## Disclaimer
 
