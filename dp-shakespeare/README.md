@@ -4,7 +4,7 @@ Calculate a differentially private wordcount across shakespearse plays.
 Takes as input a summary of Shakespeare's places and executes a differentially
 private summary.
 
-Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-summary/Readme.md).
+Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-summary/).
 
 ## Build
 
@@ -24,7 +24,7 @@ export SHAKESPEARE_ADDRESS={SHAKESPEARE_ADDRESS}
 npm run-script run
 ```
 
-Instructions on reading the output can be dound in the [Dataset List Readme](../dataset-list/Readme.md)
+Instructions on reading the output can be dound in the [Dataset List Readme](../dataset-list/).
 
 ## Debugging tips
 
