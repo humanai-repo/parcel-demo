@@ -9,14 +9,14 @@ The Upload Shakespeare Summary Parcel script uploads that file to parcel.
 
 Based on Oasis Labs [data upload example](https://github.com/oasislabs/parcel-examples/tree/latest/data-upload).
 
-# Build
+## Build
 
 ```bash
 npm install tslib
 npm run-script build
 ```
 
-# Run
+## Run
 
 Requires an App to be setup through the [Parcel Portal](https://portal.oasiscloud.io/) --
 [details here](https://docs.oasiscloud.io/latest/getting-started.html).

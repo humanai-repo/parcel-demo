@@ -6,14 +6,14 @@ private summary.
 
 Assumes you have followed (Upload Shakespeare Summary)[../../upload-shakespeare-summary].
 
-# Build
+## Build
 
 ```bash
 npm install tslib
 npm run-script build
 ```
 
-# Run
+## Run
 
 The address of the Shakespeare summary is printed when running the upload script. It starts "0x...".
 

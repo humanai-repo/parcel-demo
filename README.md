@@ -9,3 +9,8 @@ perform a differentially private query across a second parties data. The data
 in the example is a summary of Shakespeares plays.
 
 Party 1 [uploads](upload-shakespeare-summary) the data, Party 2 performs a [differentially private](dp-shakespeare) query over the data.
+
+## Disclaimer
+
+The code here is strictly a technology demonstration and should not be used in
+a production environment.
