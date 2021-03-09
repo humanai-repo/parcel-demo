@@ -1,0 +1,17 @@
+{
+    "private": true,
+    "name": "@humanai-repo/dataset-list",
+    "version": "0.0.1",
+    "main": "./src/main.ts",
+    "license": "Apache 2.0",
+    "author": "human.ai <hello@human.ai>",
+    "scripts": {
+        "build": "tsc -b",
+        "lint": "eslint '{src,test}/**.ts' && prettier --check '{src,test}/**.ts' package.json tsconfig.json",
+        "fmt": "eslint --fix '{src,test}/**.ts' && prettier --write --ignore-path .eslintignore '{src,test}/**.ts'",
+        "run": "node bin/main.js"
+    },
+    "dependencies": {
+        "@oasislabs/parcel-sdk": "^0.5.0"
+    }
+}
