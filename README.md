@@ -11,6 +11,9 @@ in the example is a summary of Shakespeares plays.
  1. Alice [uploads](upload-shakespeare-summary) the data,
  1. Bob performs a [differentially private](dp-shakespeare) query over the data.
 
+ The repo also includes dataset handling scripts for
+ [listing owned datasets](dataset-list) and [deleting test data](delete-data).
+
 ## Disclaimer
 
 The code here is strictly a technology demonstration and should not be used in

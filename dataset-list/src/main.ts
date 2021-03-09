@@ -19,8 +19,10 @@ async function main() {
     // #region snippet-dataset-list
     const datasets = await identity.getOwnedDatasets();
     datasets.forEach(function (dataset : Parcel.Dataset) {
+        // TODO: Skip deactivated datasets
         console.log(`${dataset.address.hex} ${dataset.creationTimestamp.toISOString()} ${dataset.metadata.title}`);
     });
+    // #endregion snippet-dataset-list
 }
 
 main()
