@@ -22,7 +22,7 @@ async function main() {
         name: 'dp-shakespeare',
         dockerImage: 'humansimon/pydp-cli',
         inputDatasets: [{ mountPath: 'shakespeare_wc.csv', address: new Parcel.Address(shakespeareAddress) }],
-        outputDatasets: [{ mountPath: 'prediction.txt', owner: identity }],
+        outputDatasets: [{ mountPath: 'shakespeare_summary.txt', owner: identity }],
         cmd: [
             'pydp-cli',
             '-i',
@@ -39,6 +39,9 @@ async function main() {
             '/parcel/data/out/shakespeare_summary.txt',
         ],
     };
+
+    // TODO: Add a debug mode that pipes STDERR and STDOUT to mounted files.
+
     const jobId = await dispatcher.submitJob({ job: jobRequest });
     // #endregion snippet-submit-job
     console.log(`Job ${Parcel.utils.encodeHex(jobId)} submitted.`);
