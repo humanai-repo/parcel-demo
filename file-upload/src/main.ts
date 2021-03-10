@@ -11,10 +11,11 @@ interface FileUploadArguments {
     title: string;
 }
 
+//TODO: Add documentation for args and make required
 export const args = parse<FileUploadArguments>(
     {
-        sourcePath: String,
-        title: String,
+        sourcePath: {type: String, optional: true},
+        title: {type: String, optional: true},
     },
 );
 
