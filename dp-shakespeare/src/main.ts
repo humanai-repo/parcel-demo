@@ -40,7 +40,9 @@ async function main() {
         ],
     };
 
-    // TODO: Add a debug mode that pipes STDERR and STDOUT to mounted files.
+    // TODO: Add a debug mode that pipes STDERR and STDOUT to mounted files
+    // (this is NOT secure but would be appropriate with data you have raw
+    // access to).
 
     const jobId = await dispatcher.submitJob({ job: jobRequest });
     // #endregion snippet-submit-job
