@@ -15,6 +15,7 @@ async function main() {
     // SHAKESPEARE_PARA1_ADDRESS and SHAKESPEARE_PARA2_ADDRESS env variables.
     // Read the number of plays from the SHAKESPEARE_N_PLAYS env variable.
     // TODO: Refactor such that the number of input chunks is not hardcoded.
+    // TODO: Move the environment variables to commandline args.
     const shakespeareParaAddress1 = process.env.SHAKESPEARE_PARA1_ADDRESS;
     const shakespeareParaAddress2 = process.env.SHAKESPEARE_PARA2_ADDRESS;
     const shakespeareNPlays = parseInt(process.env.SHAKESPEARE_N_PLAYS);
@@ -63,6 +64,8 @@ async function main() {
     } else {
         console.log('Job failed!', job.info);
     }
+
+    // TODO: Write a file to output with a list of output addresses.
 }
 
 main();

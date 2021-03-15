@@ -14,6 +14,7 @@ async function main() {
 
     // read the DataSet address from the SHAKESPEARE_ADDRESS env variable
     // TODO: Throw error if not set
+    // TODO: Move to a command line argument
     const shakespeareAddress = process.env.SHAKESPEARE_ADDRESS;
 
     // Submit the job.
