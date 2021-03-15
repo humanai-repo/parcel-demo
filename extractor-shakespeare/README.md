@@ -34,7 +34,7 @@ Instructions on reading the output can be found in the [Dataset List Readme](../
 The docker command executed by the job can be run locally with:
 
 ```bash
-docker run -v $DATA_DIR:/parcel humansimon/csv_extractor \
+docker run -v $DATA_DIR:/parcel humansimon/csv-extractor \
   csv_extractor -i /parcel/Paragraphs.txt.chunk1 -i /parcel/Paragraphs.txt.chunk2 \
   -c PlainText --id WorkID -n 43 -p /parcel/ExtratedParagraphs.csv
 ```
