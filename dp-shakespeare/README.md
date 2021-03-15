@@ -24,7 +24,7 @@ export SHAKESPEARE_ADDRESS={SHAKESPEARE_ADDRESS}
 npm run-script run
 ```
 
-Instructions on reading the output can be dound in the [Dataset List Readme](../dataset-list/).
+Instructions on reading the output can be found in the [Dataset List Readme](../dataset-list/).
 
 ## Debugging tips
 
