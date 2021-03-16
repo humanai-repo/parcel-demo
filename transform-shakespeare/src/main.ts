@@ -1,7 +1,6 @@
 import * as Parcel from '@oasislabs/parcel-sdk';
 import { parse } from 'ts-command-line-args';
 import * as fs from 'fs';
-import * as rd from 'readline';
 import * as process from 'process';
 
 // #region snippet-config
@@ -37,8 +36,6 @@ async function main() {
     const dispatcher = await Parcel.Dispatcher.connect(config.dispatcherAddress, identity, config);
 
     // #region snippit-read-input-addresses
-    let reader = rd.createInterface(fs.createReadStream(args.inputAddresses));
-    //TODO: filter blank lines
     const inputAddresses = fs.readFileSync(args.inputAddresses, 'ascii').split("\n").filter(l => l !== '');
     // #endregion snippit-read-input-addresses
 
