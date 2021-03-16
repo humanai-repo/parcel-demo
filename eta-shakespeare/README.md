@@ -1,5 +1,5 @@
 # Extract Transform Aggregate pipeline
-An example extract transform aggregate pipeline querying a shakespeare play.
+An example "extract, transform, aggregate" pipeline querying a shakespeare play.
 
 Ties together [Extract](../extractor-shakespeare),
 [Transform](../transform-shakespeare) and [Aggregate](../dp-shakespeare)

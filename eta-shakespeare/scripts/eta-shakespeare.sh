@@ -14,10 +14,12 @@ INPUT_ADDRESSES=$1
 N_ENTITIES=$2
 
 echo "EXTRACTOR"
+echo "Reading from input addresses in $INPUT_ADDRESSES"
 # Run the extractor
 cd $HOME_DIR/../extractor-shakespeare
 npm run-script run -- -a $INPUT_ADDRESSES -n $N_ENTITIES -o $PER_ENTITY_INPUT_ADDRESSES
 STATUS=$?
+echo "Extract ouput addresses $PER_ENTITY_INPUT_ADDRESSES"
 
 #If it errored then bail
 if test $status -neq 0
@@ -30,6 +32,7 @@ echo "TRANSFORM"
 cd $HOME_DIR/../transform-shakespeare 
 npm run-script run -- -a $PER_ENTITY_INPUT_ADDRESSES -o $PER_ENTITY_OUTPUT_ADDRESSES
 STATUS=$?
+echo "Transform ouput addresses $PER_ENTITY_OUTPUT_ADDRESSES"
 
 #If it errored then bail
 if test $status -neq 0
@@ -46,7 +49,11 @@ if test $status -neq 0
 then
 	exit 1
 fi
+echo "Aggregate ouput address $OUTPUT_ADDRESS"
 
 echo "DOWNLOAD OUTPUT"
 # Download the output
-parcel get --datasetAddress `cat $OUTPUT_ADDRESS` --targetPath $OUPUT
+parcel get --datasetAddress `cat $OUTPUT_ADDRESS` --targetPath $OUTPUT
+echo "Output file $OUTPUT"
+cat $OUTPUT
+
