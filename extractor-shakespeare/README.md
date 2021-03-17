@@ -9,6 +9,7 @@ Assumes you have followed [Upload Shakespeare Summary](../file-upload/scropts/up
 
 ```bash
 npm install tslib
+npm install ts-command-line-args
 npm run-script build
 ```
 
@@ -19,15 +20,21 @@ They start "0x...".
 Alternatively you can run the [dataset-list](../dataset-list/) script and read it off.
 
 ```bash
-export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
-export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-export SHAKESPEARE_PARA1_ADDRESS={SHAKESPEARE_PARA1_ADDRESS}
-export SHAKESPEARE_PARA2_ADDRESS={SHAKESPEARE_PARA2_ADDRESS}
-export SHAKESPEARE_N_PLAYS=43
-npm run-script run
+npm run-script run -- -h
+
+Options
+
+  -a, --inputAddresses string    Path to a list of input addresses, one address per line.                 
+  -o, --outputAddresses string   Optional path to write a list of output addresses, one address per line. 
+  -n, --count number             The number of unique entities expected.                                  
+  -h, --help                     Prints this usage guide    
 ```
 
-Instructions on reading the output can be found in the [Dataset List Readme](../dataset-list/).
+```bash
+export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
+export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
+npm run-script run  -- -a working-data/input.txt -o working-data/output.txt -n 43
+```
 
 ## Debugging tips
 

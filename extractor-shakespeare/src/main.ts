@@ -1,8 +1,35 @@
 import * as Parcel from '@oasislabs/parcel-sdk';
+import { parse } from 'ts-command-line-args';
+import * as fs from 'fs';
+import * as process from 'process';
 
 // #region snippet-config
 const configParams = Parcel.Config.paramsFromEnv();
 const config = new Parcel.Config(configParams);
+
+interface IOArguments {
+    // TODO: Make input addresses optional and allow a single input address
+    // to be passed instead of a path to a file of addresses
+    inputAddresses: string;
+    outputAddresses?: string;
+    count: number;
+    help?: boolean;
+}
+
+export const args = parse<IOArguments>(
+    {
+        inputAddresses: {type: String, alias: 'a', optional: true,
+            description: 'Path to a list of input addresses, one address per line.'},
+        outputAddresses: {type: String, alias: 'o', optional: true,
+            description: 'Optional path to write a list of output addresses, one address per line.'},
+        count: {type: Number, alias: 'n', optional: true,
+            description: 'The number of unique entities expected.'},
+        help: { type: Boolean, optional: true, alias: 'h', description: 'Prints this usage guide' },
+    },
+    {
+        helpArg: 'help',
+    },
+);
 // #endregion snippet-config
 
 async function main() {
@@ -11,37 +38,28 @@ async function main() {
     const identity = await config.getTokenIdentity();
     const dispatcher = await Parcel.Dispatcher.connect(config.dispatcherAddress, identity, config);
 
-    // read the OSS Paragraphs chunks address from the
-    // SHAKESPEARE_PARA1_ADDRESS and SHAKESPEARE_PARA2_ADDRESS env variables.
-    // Read the number of plays from the SHAKESPEARE_N_PLAYS env variable.
-    // TODO: Refactor such that the number of input chunks is not hardcoded.
-    // TODO: Move the environment variables to commandline args.
-    const shakespeareParaAddress1 = process.env.SHAKESPEARE_PARA1_ADDRESS;
-    const shakespeareParaAddress2 = process.env.SHAKESPEARE_PARA2_ADDRESS;
-    const shakespeareNPlays = parseInt(process.env.SHAKESPEARE_N_PLAYS);
+    const inputAddresses = fs.readFileSync(args.inputAddresses, 'ascii').split("\n").filter(l => l !== '');
+    const shakespeareNPlays = args.count;
 
-    const fileNamePrefix = "ExtratedParagraphs"
+    const outputFileNamePrefix = "ExtratedParagraphs";
+    const inputFileNamePrefix = "InputChunk";
 
-    var outputDatasets = []
-    for (var i = 0; i < shakespeareNPlays; i++) {
-        outputDatasets.push({ mountPath: `${fileNamePrefix}-${i}.csv`, owner: identity })
+    var inputDatasets = [];
+    var inputCmd : string[] = [];
+    for(let i in inputAddresses) {
+        let fileName = `${inputFileNamePrefix}-${i}.txt`;
+        let filePath = `/parcel/data/in/${fileName}`;
+        inputDatasets.push({ mountPath: fileName, address: new Parcel.Address(inputAddresses[i])});
+        inputCmd.push('-i', filePath);
     }
 
+    var outputDatasets = []
+    for (let i = 0; i < shakespeareNPlays; i++) {
+        outputDatasets.push({ mountPath: `${outputFileNamePrefix}-${i}.csv`, owner: identity })
+    }
 
-    // Submit the job.
-    // #region snippet-submit-job
-    const jobRequest = {
-        name: 'extractor-shakespeare',
-        dockerImage: 'humansimon/csv-extractor',
-        inputDatasets: [{ mountPath: 'Paragraphs.txt.chunk1', address: new Parcel.Address(shakespeareParaAddress1)},
-                        { mountPath: 'Paragraphs.txt.chunk2', address: new Parcel.Address(shakespeareParaAddress2)}],
-        outputDatasets: outputDatasets,
-        cmd: [
+    var cmd = [
             'csv_extractor',
-            '-i',
-            '/parcel/data/in/Paragraphs.txt.chunk1',
-            '-i',
-            '/parcel/data/in/Paragraphs.txt.chunk2',
             '-c',
             'PlainText',
             '--id',
@@ -49,8 +67,17 @@ async function main() {
             '-n',
             `${shakespeareNPlays}`,
             '-p',
-            `/parcel/data/out/${fileNamePrefix}`,
-        ],
+            `/parcel/data/out/${outputFileNamePrefix}`,
+        ].concat(inputCmd);
+
+    // Submit the job.
+    // #region snippet-submit-job
+    const jobRequest = {
+        name: 'extractor-shakespeare',
+        dockerImage: 'humansimon/csv-extractor',
+        inputDatasets: inputDatasets,
+        outputDatasets: outputDatasets,
+        cmd: cmd,
     };
 
     const jobId = await dispatcher.submitJob({ job: jobRequest });
@@ -63,9 +90,14 @@ async function main() {
         console.log('Job completed successfully!');
     } else {
         console.log('Job failed!', job.info);
+        console.log('Exiting with falure status code 1');
+        return process.exit(1);
     }
-
-    // TODO: Write a file to output with a list of output addresses.
+    const outputAddresses = job.outputs.map((o) => {return o.address.hex;});
+    // Write the out addresses to the output file if set
+    if(args.outputAddresses) {
+        fs.writeFileSync(args.outputAddresses, outputAddresses.join("\n"));
+    }
 }
 
 main();

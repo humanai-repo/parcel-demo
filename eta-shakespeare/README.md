@@ -19,5 +19,5 @@ The arguments are:
  *  the number of shakespeare plays.
 
 `bash
-bash scripts/eta-sharkespeare.sh input_addresses.txt 43
+bash scripts/eta-sharkespeare.sh ../extractor-shakespeare/working-data/input.txt 43
 `
