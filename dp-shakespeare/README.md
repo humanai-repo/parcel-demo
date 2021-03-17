@@ -10,6 +10,7 @@ Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-sum
 
 ```bash
 npm install tslib
+npm install ts-command-line-args
 npm run-script build
 ```
 
@@ -18,10 +19,19 @@ npm run-script build
 The address of the Shakespeare summary is printed when running the upload script. It starts "0x...".
 
 ```bash
+npm run-script run -- -h
+
+Options
+
+  -a, --inputAddresses string    Path to a list of input addresses, one address per line.                 
+  -o, --outputAddresses string   Optional path to write a list of output addresses, one address per line. 
+  -h, --help                     Prints this usage guide  
+```
+
+```bash
 export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-export SHAKESPEARE_ADDRESS={SHAKESPEARE_ADDRESS}
-npm run-script run
+npm run-script run  -- -a working-data/input.txt -o working-data/output.txt
 ```
 
 Instructions on reading the output can be found in the [Dataset List Readme](../dataset-list/).
