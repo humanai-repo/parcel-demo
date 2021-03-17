@@ -8,8 +8,8 @@ Differentially private Shakespeare is a two part demo showing how one can
 perform a differentially private query across someone elses data. The data
 in the example is a summary of Shakespeares plays.
 
- 1. Alice [uploads](upload-shakespeare-summary) the data,
- 1. Bob performs a [differentially private](dp-shakespeare) query over the data.
+ 1. Alice [uploads](file-upload) the data,
+ 1. Bob performs a 3-stage [differentially private](eta-shakespeare) query over the data.
 
  The repo also includes dataset handling scripts for
  [listing owned datasets](dataset-list) and [deleting test data](delete-data).
