@@ -9,9 +9,10 @@ Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-sum
 ## Build
 
 ```bash
-npm install tslib
-npm install ts-command-line-args
-npm run-script build
+npm i tslib
+npm i ts-command-line-args
+npm i @oasislabs/parcel
+npm run prestart
 ```
 
 ## Run
@@ -19,7 +20,7 @@ npm run-script build
 The address of the Shakespeare summary is printed when running the upload script. It starts "0x...".
 
 ```bash
-npm run-script run -- -h
+npm run start -- -h
 
 Options
 
@@ -31,10 +32,15 @@ Options
 ```bash
 export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run-script run  -- -a working-data/input.txt -o working-data/output.txt
+npm run start  -- -a working-data/input.txt -o working-data/output.txt
 ```
 
-Instructions on reading the output can be found in the [Dataset List Readme](../dataset-list/).
+The output can be read using the parcel CLI
+
+```bash
+parcel get --datasetAddress `cat working-data/output.txt` --targetPath working-data/outputfile.csv
+cat working-data/outputfile.csv
+```
 
 ## Debugging tips
 

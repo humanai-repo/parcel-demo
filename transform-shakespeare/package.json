@@ -5,14 +5,19 @@
     "main": "./src/main.ts",
     "license": "Apache 2.0",
     "author": "human.ai <hello@human.ai>",
+    "type": "module",
+    "engines": {
+        "node": ">=14.8"
+    },
     "scripts": {
-        "build": "tsc -b",
-        "lint": "eslint '{src,test}/**.ts' && prettier --check '{src,test}/**.ts' package.json tsconfig.json",
-        "fmt": "eslint --fix '{src,test}/**.ts' && prettier --write --ignore-path .eslintignore '{src,test}/**.ts'",
-        "run": "node bin/main.js"
+        "prestart": "tsc -b",
+        "start": "node bin/main.js"
     },
     "dependencies": {
-        "@oasislabs/parcel-sdk": "^0.5.0",
+        "@oasislabs/parcel": "^0.1.9",
         "ts-command-line-args": "^1.8.0"
+    },
+    "devDependencies": {
+        "typescript": "^4.1.2"
     }
 }

@@ -1,36 +1,31 @@
 // #region snippet-config
-import * as Parcel from '@oasislabs/parcel-sdk';
+import Parcel, { Document } from '@oasislabs/parcel';
+import * as process from 'process';
 import fs from 'fs';
 
-const configParams = Parcel.Config.paramsFromEnv();
-const config = new Parcel.Config(configParams);
-// #endregion snippet-config
+const clientId = process.env.PARCEL_CLIENT_ID ?? '';
+const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
 async function main() {
-    // #region snippet-connect
-    // Find the identity address associated with the private key you supplied
-    // above.
-    const identityAddress = Parcel.Identity.addressFromToken(await config.tokenProvider.getToken());
+    const parcel = new Parcel({
+      clientId: clientId,
+      privateKey: privateKey
+    });
 
-    // Let's connect to the identity.
-    const identity = await Parcel.Identity.connect(identityAddress, config);
-    console.log(`Connected to identity at address ${identity.address.hex}`);
-    // #endregion snippet-connect
-
-    // #region snippet-dataset-upload
-    // Now let's upload a dataset.
-    const datasetMetadata = {
-        title: 'Shakespeare Summary',
-    };
+    const documentDetails = {title: 'Shakespeare Paragraphs'};
 
     console.log('Uploading data for our user');
-    const dataset = await Parcel.Dataset.upload(
-        await fs.promises.readFile('data/shakespeare_wc.csv'), datasetMetadata, identity, config);
-    // `dataset.address.hex` is your dataset's unique ID.
-    console.log(
-        `Created dataset with address ${dataset.address.hex} and uploaded to ${dataset.metadata.dataUrl}`,
-    );
+    let document: Document;
+
+    try {
+        document = await parcel.uploadDocument(
+            await fs.promises.readFile('working-data/Paragraphs1.txt'), {details: documentDetails}).finished;
+    } catch (error: any) {
+          console.error('Failed to upload document');
+      throw error;
+    }
     // #endregion snippet-dataset-upload
+    console.log(`Created document ${document.id} with title ${document.details.title}`);
 
     // TODO: Set a policy on the data.
 }
@@ -39,5 +34,5 @@ main()
     .then(() => console.log('All done!'))
     .catch((err) => {
         console.log(`Error in main(): ${err.stack || JSON.stringify(err)}`);
-        process.exitCode = 1;
+        return process.exit(1);
     });

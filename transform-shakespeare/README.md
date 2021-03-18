@@ -10,9 +10,10 @@ over-kill however works for the technology demonstration.
 ## Build
 
 ```bash
-npm install tslib
-npm install ts-command-line-args
-npm run-script build
+npm i tslib
+npm i @oasislabs/parcel
+npm i ts-command-line-args
+npm run prestart
 ```
 
 ## Run
@@ -21,7 +22,7 @@ A file of input addresses, one address per line, is passed in as a command line 
 An analogous output file is written.
 
 ```bash
-npm run-script run -- -h
+npm run start -- -h
 
 Options
 
@@ -33,7 +34,7 @@ Options
 ```bash
 export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run-script run -- -a working-data/input.txt -o working-data/output.txt
+npm run start -- -a working-data/input.txt -o working-data/output.txt
 ```
 
 ## Debugging tips

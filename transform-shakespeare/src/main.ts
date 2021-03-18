@@ -1,16 +1,16 @@
-import * as Parcel from '@oasislabs/parcel-sdk';
+import Parcel, {InputDocumentSpec, OutputDocumentSpec, Job, JobSpec, JobPhase, DocumentId} from '@oasislabs/parcel';
 import { parse } from 'ts-command-line-args';
 import * as fs from 'fs';
 import * as process from 'process';
 
 // #region snippet-config
-const configParams = Parcel.Config.paramsFromEnv();
-const config = new Parcel.Config(configParams);
+const clientId = process.env.PARCEL_CLIENT_ID ?? '';
+const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
 interface IOArguments {
     // TODO: Make input addresses optional and allow a single input address
     // to be passed instead of a path to a file of addresses
-    inputAddresses: string;
+    inputAddresses?: string;
     outputAddresses?: string;
     help?: boolean;
 }
@@ -32,24 +32,25 @@ export const args = parse<IOArguments>(
 async function main() {
     console.log('Here we go...');
 
-    const identity = await config.getTokenIdentity();
-    const dispatcher = await Parcel.Dispatcher.connect(config.dispatcherAddress, identity, config);
+    const parcel = new Parcel({
+      clientId: clientId,
+      privateKey: privateKey
+    });
+    console.log('Retrieving identity');
+    const identity =  (await parcel.getCurrentIdentity()).id;
 
-    // #region snippit-read-input-addresses
-    const inputAddresses = fs.readFileSync(args.inputAddresses, 'ascii').split("\n").filter(l => l !== '');
-    // #endregion snippit-read-input-addresses
+
+    const inputAddresses = fs.readFileSync(args.inputAddresses || '', 'ascii').split("\n").filter(l => l !== '');
 
     // #region snippet-create-job-requests
-    let jobRequests = inputAddresses.map(
+    let jobSpecs = inputAddresses.map(
         (i) => {
             console.log(i);
             return {
                 name: 'transform-shakespeare',
-                //dockerImage: 'patagonagmbh/csvkit:1.0.3',
-                dockerImage: 'humansimon/simple-transform',
-                inputDatasets: [{ mountPath: 'input.csv', address: new Parcel.Address(i)},],
-                outputDatasets: [{ mountPath: 'output.csv', owner: identity }],
-                //echo "words,index" > /data/ouput.csv ; csvcut -c PlainText data/paragraphs-0.csv | tail -n+2 | wc -w  | sed 's/$/,1/' >> /data/ouput.csv
+                image: 'humansimon/simple-transform',
+                inputDocuments: [{ mountPath: 'input.csv', id: i as DocumentId},],
+                outputDocuments: [{ mountPath: 'output.csv', owner: identity }],
                 cmd: [
                 'simple_transform',
                 '-i',
@@ -70,21 +71,27 @@ async function main() {
     
     let outputAddresses: string[] = [];
     // TODO: This submits each job sequentially -- swap to ascync
-    for (let jobRequest of jobRequests) {
-        const jobId = await dispatcher.submitJob({ job: jobRequest });
+    for (let jobSpec of jobSpecs) {
+        let jobId = (await parcel.submitJob(jobSpec)).id;
         // #endregion snippet-submit-job
-        console.log(`Job ${Parcel.utils.encodeHex(jobId)} submitted.`);
+        console.log(`Job ${jobId} submitted.`);
 
         // Wait for job completion.
-        const job = await dispatcher.getCompletedJobInfo(jobId);
-        if (job.status instanceof Parcel.JobCompletionStatus.Success) {
+        let job: Job;
+        do {
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
+          job = await parcel.getJob(jobId);
+          console.log(`Job status is ${JSON.stringify(job.status)}`);
+        } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
+
+        if (job.status.phase === JobPhase.SUCCEEDED) {
             console.log('Job completed successfully!');
         } else {
-            console.log('Job failed!', job.info);
+            console.log('Job failed!');
             console.log('Exiting with falure status code 1');
             return process.exit(1);
         }
-        outputAddresses = outputAddresses.concat(job.outputs.map((o) => {return o.address.hex;}));
+        outputAddresses = outputAddresses.concat(job.status.outputDocuments.map((o) => {return o.id;}));
      }
     //An example reading output addresses
 

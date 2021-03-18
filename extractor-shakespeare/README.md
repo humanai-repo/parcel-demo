@@ -8,9 +8,10 @@ Assumes you have followed [Upload Shakespeare Summary](../file-upload/scropts/up
 ## Build
 
 ```bash
-npm install tslib
-npm install ts-command-line-args
-npm run-script build
+npm i tslib
+npm i @oasislabs/parcel
+npm i ts-command-line-args
+npm run prestart
 ```
 
 ## Run
@@ -31,9 +32,9 @@ Options
 ```
 
 ```bash
-export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
+export PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run-script run  -- -a working-data/input.txt -o working-data/output.txt -n 43
+npm run start  -- -a working-data/input.txt -o working-data/output.txt -n 43
 ```
 
 ## Debugging tips

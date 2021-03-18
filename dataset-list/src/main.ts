@@ -1,33 +1,32 @@
 // #region snippet-config
-import * as Parcel from '@oasislabs/parcel-sdk';
+import Parcel, { Document } from '@oasislabs/parcel';
+import * as process from 'process';
 
-const configParams = Parcel.Config.paramsFromEnv();
-const config = new Parcel.Config(configParams);
+//const configParams = Parcel.Config.paramsFromEnv();
+//const config = new Parcel.Config(configParams);
 // #endregion snippet-config
 
+const clientId = process.env.PARCEL_CLIENT_ID ?? '';
+const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
+
 async function main() {
-    // #region snippet-connect
-    // Find the identity address associated with the private key you supplied
-    // above.
-    const identityAddress = Parcel.Identity.addressFromToken(await config.tokenProvider.getToken());
-
-    // Let's connect to the identity.
-    const identity = await Parcel.Identity.connect(identityAddress, config);
-    console.log(`Connected to identity at address ${identity.address.hex}`);
-    // #endregion snippet-connect
-
-    // #region snippet-dataset-list
-    const datasets = await identity.getOwnedDatasets();
-    datasets.forEach(function (dataset : Parcel.Dataset) {
-        // TODO: Skip deactivated datasets
-        console.log(`${dataset.address.hex} ${dataset.creationTimestamp.toISOString()} ${dataset.metadata.title}`);
+    const parcel = new Parcel({
+      clientId: clientId,
+      privateKey: privateKey
     });
-    // #endregion snippet-dataset-list
+
+    // TODO: Add paging
+    const documentPage = await parcel.listDocuments();
+
+    documentPage.results.forEach(function (document : Document) {
+        // TODO: Skip deactivated datasets
+        console.log(`${document.id} ${document.owner} ${document.createdAt.toISOString()} ${document.details.title} ${document.size}`);
+    });
 }
 
 main()
     .then(() => console.log('All done!'))
     .catch((err) => {
         console.log(`Error in main(): ${err.stack || JSON.stringify(err)}`);
-        process.exitCode = 1;
+        return process.exit(1);
     });

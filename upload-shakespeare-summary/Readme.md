@@ -12,11 +12,14 @@ Based on Oasis Labs [data upload example](https://github.com/oasislabs/parcel-ex
 ## Build
 
 ```bash
-npm install tslib
-npm run-script build
+npm i tslib
+npm i @oasislabs/parcel
+npm run prestart
 ```
 
 ## Run
+
+TODO: Change the Portal address.
 
 Requires an App to be setup through the [Parcel Portal](https://portal.oasiscloud.io/) --
 [details here](https://docs.oasiscloud.io/latest/getting-started.html).
@@ -24,7 +27,7 @@ Requires an App to be setup through the [Parcel Portal](https://portal.oasisclou
 ```bash
 export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run-script run
+npm run start
 ```
 
 After the upload the data should be visible in the parcel portal.

@@ -1,18 +1,19 @@
-import * as Parcel from '@oasislabs/parcel-sdk';
+import Parcel, {InputDocumentSpec, OutputDocumentSpec, Job, JobSpec, JobPhase, DocumentId} from '@oasislabs/parcel';
 import { parse } from 'ts-command-line-args';
 import * as fs from 'fs';
 import * as process from 'process';
 
 // #region snippet-config
-const configParams = Parcel.Config.paramsFromEnv();
-const config = new Parcel.Config(configParams);
+const clientId = process.env.PARCEL_CLIENT_ID ?? '';
+const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
+
 
 interface IOArguments {
     // TODO: Make input addresses optional and allow a single input address
     // to be passed instead of a path to a file of addresses
-    inputAddresses: string;
+    inputAddresses?: string;
     outputAddresses?: string;
-    count: number;
+    count?: number;
     help?: boolean;
 }
 
@@ -35,27 +36,34 @@ export const args = parse<IOArguments>(
 async function main() {
     console.log('Here we go...');
 
-    const identity = await config.getTokenIdentity();
-    const dispatcher = await Parcel.Dispatcher.connect(config.dispatcherAddress, identity, config);
+    const parcel = new Parcel({
+      clientId: clientId,
+      privateKey: privateKey
+    });
+    console.log('Retrieving identity');
+    const identity =  (await parcel.getCurrentIdentity()).id;
 
-    const inputAddresses = fs.readFileSync(args.inputAddresses, 'ascii').split("\n").filter(l => l !== '');
-    const shakespeareNPlays = args.count;
+
+    const inputAddresses = fs.readFileSync(args.inputAddresses || '', 'ascii').split("\n").filter(l => l !== '');
+    const shakespeareNPlays = args.count || 0;
 
     const outputFileNamePrefix = "ExtratedParagraphs";
     const inputFileNamePrefix = "InputChunk";
 
-    var inputDatasets = [];
+    console.log('Building inputs and output paths');
+    
+    var inputDocuments : InputDocumentSpec[] = [];
     var inputCmd : string[] = [];
     for(let i in inputAddresses) {
         let fileName = `${inputFileNamePrefix}-${i}.txt`;
         let filePath = `/parcel/data/in/${fileName}`;
-        inputDatasets.push({ mountPath: fileName, address: new Parcel.Address(inputAddresses[i])});
+        inputDocuments.push({ mountPath: fileName, id: inputAddresses[i] as DocumentId});
         inputCmd.push('-i', filePath);
     }
 
-    var outputDatasets = []
+    var outputDocuments : OutputDocumentSpec[] = []
     for (let i = 0; i < shakespeareNPlays; i++) {
-        outputDatasets.push({ mountPath: `${outputFileNamePrefix}-${i}.csv`, owner: identity })
+        outputDocuments.push({ mountPath: `${outputFileNamePrefix}-${i}.csv`, owner: identity })
     }
 
     var cmd = [
@@ -70,34 +78,48 @@ async function main() {
             `/parcel/data/out/${outputFileNamePrefix}`,
         ].concat(inputCmd);
 
+    console.log(cmd.join(" "));
+
     // Submit the job.
     // #region snippet-submit-job
-    const jobRequest = {
+    const jobSpec: JobSpec = {
         name: 'extractor-shakespeare',
-        dockerImage: 'humansimon/csv-extractor',
-        inputDatasets: inputDatasets,
-        outputDatasets: outputDatasets,
+        image: 'humansimon/csv-extractor',
+        inputDocuments: inputDocuments,
+        outputDocuments: outputDocuments,
         cmd: cmd,
     };
 
-    const jobId = await dispatcher.submitJob({ job: jobRequest });
+    const jobId = (await parcel.submitJob(jobSpec)).id;
     // #endregion snippet-submit-job
-    console.log(`Job ${Parcel.utils.encodeHex(jobId)} submitted.`);
+    console.log(`Job ${jobId} submitted.`);
 
     // Wait for job completion.
-    const job = await dispatcher.getCompletedJobInfo(jobId);
-    if (job.status instanceof Parcel.JobCompletionStatus.Success) {
+    let job: Job;
+    do {
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
+      job = await parcel.getJob(jobId);
+      console.log(`Job status is ${JSON.stringify(job.status)}`);
+    } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
+
+    if (job.status.phase === JobPhase.SUCCEEDED) {
         console.log('Job completed successfully!');
     } else {
-        console.log('Job failed!', job.info);
+        console.log('Job failed!');
         console.log('Exiting with falure status code 1');
         return process.exit(1);
     }
-    const outputAddresses = job.outputs.map((o) => {return o.address.hex;});
+    const outputAddresses = job.status.outputDocuments.map((o) => {return o.id;});
     // Write the out addresses to the output file if set
     if(args.outputAddresses) {
         fs.writeFileSync(args.outputAddresses, outputAddresses.join("\n"));
     }
+    
 }
 
-main();
+main()
+    .then(() => console.log('All done!'))
+    .catch((err) => {
+        console.log(`Error in main(): ${err.stack || JSON.stringify(err)}`);
+        return process.exit(1);
+    });
