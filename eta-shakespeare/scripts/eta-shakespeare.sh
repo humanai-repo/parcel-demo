@@ -43,7 +43,7 @@ fi
 echo "AGGREGATE"
 # Run the aggregator
 cd $HOME_DIR/../dp-shakespeare
-npm run-script run -- -a $PER_ENTITY_INPUT_ADDRESSES -o $OUTPUT_ADDRESS
+npm run start -- -a $PER_ENTITY_INPUT_ADDRESSES -o $OUTPUT_ADDRESS
 STATUS=$?
 if test $status -neq 0
 then
@@ -53,7 +53,6 @@ echo "Aggregate ouput address $OUTPUT_ADDRESS"
 
 echo "DOWNLOAD OUTPUT"
 # Download the output
-parcel get --datasetAddress `cat $OUTPUT_ADDRESS` --targetPath $OUTPUT
-echo "Output file $OUTPUT"
-cat $OUTPUT
+cd $HOME_DIR/../data-utils
+npm run start -- -a $OUTPUT_ADDRESS -p $HOME_DIR/working-data
 
