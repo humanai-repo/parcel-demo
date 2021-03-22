@@ -19,7 +19,7 @@ async function main() {
 
     try {
         document = await parcel.uploadDocument(
-            await fs.promises.readFile('working-data/Paragraphs1.txt'), {details: documentDetails}).finished;
+            await fs.promises.readFile('working-data/Paragraphs.txt'), {details: documentDetails}).finished;
     } catch (error: any) {
           console.error('Failed to upload document');
       throw error;
