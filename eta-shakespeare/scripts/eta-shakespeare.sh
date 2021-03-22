@@ -17,7 +17,7 @@ echo "EXTRACTOR"
 echo "Reading from input addresses in $INPUT_ADDRESSES"
 # Run the extractor
 cd $HOME_DIR/../extractor-shakespeare
-npm run-script run -- -a $INPUT_ADDRESSES -n $N_ENTITIES -o $PER_ENTITY_INPUT_ADDRESSES
+npm run start -- -a $INPUT_ADDRESSES -n $N_ENTITIES -o $PER_ENTITY_INPUT_ADDRESSES
 STATUS=$?
 echo "Extract ouput addresses $PER_ENTITY_INPUT_ADDRESSES"
 
@@ -30,7 +30,7 @@ fi
 echo "TRANSFORM"
 # Run the transform
 cd $HOME_DIR/../transform-shakespeare 
-npm run-script run -- -a $PER_ENTITY_INPUT_ADDRESSES -o $PER_ENTITY_OUTPUT_ADDRESSES
+npm run start -- -a $PER_ENTITY_INPUT_ADDRESSES -o $PER_ENTITY_OUTPUT_ADDRESSES
 STATUS=$?
 echo "Transform ouput addresses $PER_ENTITY_OUTPUT_ADDRESSES"
 
