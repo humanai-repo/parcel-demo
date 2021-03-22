@@ -2,10 +2,6 @@
 import Parcel, { Document } from '@oasislabs/parcel';
 import * as process from 'process';
 
-//const configParams = Parcel.Config.paramsFromEnv();
-//const config = new Parcel.Config(configParams);
-// #endregion snippet-config
-
 const clientId = process.env.PARCEL_CLIENT_ID ?? '';
 const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
