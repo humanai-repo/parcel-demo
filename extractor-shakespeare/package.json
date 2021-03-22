@@ -14,7 +14,7 @@
         "start": "node bin/main.js"
     },
     "dependencies": {
-        "@oasislabs/parcel": "^0.1.9",
+        "@oasislabs/parcel": "^0.1.10",
         "ts-command-line-args": "^1.8.0"
     },
     "devDependencies": {
