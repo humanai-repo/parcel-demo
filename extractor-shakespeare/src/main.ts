@@ -7,6 +7,11 @@ import * as process from 'process';
 const clientId = process.env.PARCEL_CLIENT_ID ?? '';
 const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
+// As of Parcel 0.1.9, there is an effective restriction on the number of input files.
+// To work around this just run the job multiple times only mounting batches of 10 output
+// files for each run.
+const maxInputFilesPerJob = 10;
+
 
 interface IOArguments {
     // TODO: Make input addresses optional and allow a single input address
@@ -61,9 +66,14 @@ async function main() {
         inputCmd.push('-i', filePath);
     }
 
-    var outputDocuments : OutputDocumentSpec[] = []
+    var outputDocuments : OutputDocumentSpec[][] = [];
     for (let i = 0; i < shakespeareNPlays; i++) {
-        outputDocuments.push({ mountPath: `${outputFileNamePrefix}-${i}.csv`, owner: identity })
+        let j = Math.floor(i / maxInputFilesPerJob);
+        if(i%maxInputFilesPerJob == 0)
+        {
+            outputDocuments.push([]);
+        }
+        outputDocuments[j].push({ mountPath: `${outputFileNamePrefix}-${i}.csv`, owner: identity })
     }
 
     var cmd = [
@@ -82,34 +92,41 @@ async function main() {
 
     // Submit the job.
     // #region snippet-submit-job
-    const jobSpec: JobSpec = {
-        name: 'extractor-shakespeare',
-        image: 'humansimon/csv-extractor',
-        inputDocuments: inputDocuments,
-        outputDocuments: outputDocuments,
-        cmd: cmd,
-    };
+    let jobSpecs = outputDocuments.map(
+        (o) => {
+            return {
+                    name: 'extractor-shakespeare',
+                    image: 'humansimon/csv-extractor',
+                    inputDocuments: inputDocuments,
+                    outputDocuments: o,
+                    cmd: cmd,
+                };
+            });
 
-    const jobId = (await parcel.submitJob(jobSpec)).id;
-    // #endregion snippet-submit-job
-    console.log(`Job ${jobId} submitted.`);
+    let outputAddresses: string[] = [];
+    // TODO: This submits each job sequentially -- swap to ascync
+    for (let jobSpec of jobSpecs) {
+        let jobId = (await parcel.submitJob(jobSpec)).id;
+        // #endregion snippet-submit-job
+        console.log(`Job ${jobId} submitted.`);
 
-    // Wait for job completion.
-    let job: Job;
-    do {
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
-      job = await parcel.getJob(jobId);
-      console.log(`Job status is ${JSON.stringify(job.status)}`);
-    } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
+        // Wait for job completion.
+        let job: Job;
+        do {
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
+          job = await parcel.getJob(jobId);
+          console.log(`Job status is ${JSON.stringify(job.status)}`);
+        } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
 
-    if (job.status.phase === JobPhase.SUCCEEDED) {
-        console.log('Job completed successfully!');
-    } else {
-        console.log('Job failed!');
-        console.log('Exiting with falure status code 1');
-        return process.exit(1);
-    }
-    const outputAddresses = job.status.outputDocuments.map((o) => {return o.id;});
+        if (job.status.phase === JobPhase.SUCCEEDED) {
+            console.log('Job completed successfully!');
+        } else {
+            console.log('Job failed!');
+            console.log('Exiting with falure status code 1');
+            return process.exit(1);
+        }
+        outputAddresses = outputAddresses.concat(job.status.outputDocuments.map((o) => {return o.id;}));
+     }
     // Write the out addresses to the output file if set
     if(args.outputAddresses) {
         fs.writeFileSync(args.outputAddresses, outputAddresses.join("\n"));
