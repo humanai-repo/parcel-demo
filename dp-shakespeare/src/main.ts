@@ -31,6 +31,34 @@ export const args = parse<IOArguments>(
 );
 // #endregion snippet-config
 
+async function submitJobSpecs(jobSpecs : JobSpec [], parcel : Parcel) {
+    let outputAddresses: string[] = [];
+    // TODO: This submits each job sequentially -- swap to ascync
+    for (let jobSpec of jobSpecs) {
+        let jobId = (await parcel.submitJob(jobSpec)).id;
+        // #endregion snippet-submit-job
+        console.log(`Job ${jobId} submitted.`);
+
+        // Wait for job completion.
+        let job: Job;
+        do {
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
+          job = await parcel.getJob(jobId);
+          console.log(`Job status is ${JSON.stringify(job.status)}`);
+        } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
+
+        if (job.status.phase === JobPhase.SUCCEEDED) {
+            console.log('Job completed successfully!');
+        } else {
+            console.log('Job failed!');
+            console.log('Exiting with falure status code 1');
+            return process.exit(1);
+        }
+        outputAddresses = outputAddresses.concat(job.status.outputDocuments.map((o) => {return o.id;}));
+     }
+     return outputAddresses;
+}
+
 async function merge(inputAddresses : string [], identity : IdentityId, parcel : Parcel) {
     // Split input into chunks
     let inputChunks : string [][] = [];
@@ -71,50 +99,12 @@ async function merge(inputAddresses : string [], identity : IdentityId, parcel :
         jobSpecs.push(jobSpec);
     }
 
-   let outputAddresses: string[] = [];
-    // TODO: This submits each job sequentially -- swap to ascync
-    for (let jobSpec of jobSpecs) {
-        let jobId = (await parcel.submitJob(jobSpec)).id;
-        // #endregion snippet-submit-job
-        console.log(`Job ${jobId} submitted.`);
-
-        // Wait for job completion.
-        let job: Job;
-        do {
-          await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
-          job = await parcel.getJob(jobId);
-          console.log(`Job status is ${JSON.stringify(job.status)}`);
-        } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
-
-        if (job.status.phase === JobPhase.SUCCEEDED) {
-            console.log('Job completed successfully!');
-        } else {
-            console.log('Job failed!');
-            console.log('Exiting with falure status code 1');
-            return process.exit(1);
-        }
-        outputAddresses = outputAddresses.concat(job.status.outputDocuments.map((o) => {return o.id;}));
-     }
-    return outputAddresses;
+    return await submitJobSpecs(jobSpecs, parcel);
 }
 
-async function main() {
-    console.log('Here we go...');
-
-    const parcel = new Parcel({
-      clientId: clientId,
-      privateKey: privateKey
-    });
-    const identity =  (await parcel.getCurrentIdentity()).id;
-
-    let inputAddresses = fs.readFileSync(args.inputAddresses || '', 'ascii').split("\n").filter(l => l !== '');
-    
-    // Parcel 0.1.9 errors with > 10 input addresses, so we run multiple rounds of merging.
-    while(inputAddresses.length > maxInputFilesPerJob) {
-        inputAddresses = await merge(inputAddresses, identity, parcel);
-    }
-
+async function aggregate (inputAddresses : string [], identity : IdentityId, parcel : Parcel) {
     let inputFileNamePrefix = "InputChunk";
+    let outputFileName = "summary.txt";
 
     let inputDocuments : InputDocumentSpec[] = [];
     let inputCmd : string[] = [];
@@ -134,9 +124,9 @@ async function main() {
         '-a',
         'sum',
         '-e',
-        '50', // TODO: Set too high for testing
+        '5',
         '-o',
-        '/parcel/data/out/shakespeare_summary.txt',
+        `/parcel/data/out/${outputFileName}`,
     ].concat(inputCmd);
 
     console.log(cmd.join(" "));
@@ -147,34 +137,30 @@ async function main() {
         name: 'dp-shakespeare',
         image: 'humansimon/pydp-cli',
         inputDocuments: inputDocuments,
-        outputDocuments: [{ mountPath: 'shakespeare_summary.txt', owner: identity }],
+        outputDocuments: [{ mountPath: outputFileName, owner: identity }],
         cmd: cmd
     };
 
-    // TODO: Add a debug mode that pipes STDERR and STDOUT to mounted files
-    // (this is NOT secure but would be appropriate with data you have raw
-    // access to).
+    return submitJobSpecs([jobSpec], parcel);
+}
 
-    const jobId = (await parcel.submitJob(jobSpec)).id;
-    // #endregion snippet-submit-job
-    console.log(`Job ${jobId} submitted.`);
+async function main() {
+    console.log('Here we go...');
 
-    // Wait for job completion.
-    let job: Job;
-    do {
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
-      job = await parcel.getJob(jobId);
-      console.log(`Job status is ${JSON.stringify(job.status)}`);
-    } while (job.status.phase === JobPhase.PENDING || job.status.phase === JobPhase.RUNNING);
+    const parcel = new Parcel({
+      clientId: clientId,
+      privateKey: privateKey
+    });
+    const identity =  (await parcel.getCurrentIdentity()).id;
 
-    if (job.status.phase === JobPhase.SUCCEEDED) {
-        console.log('Job completed successfully!');
-    } else {
-        console.log('Job failed!');
-        console.log('Exiting with falure status code 1');
-        return process.exit(1);
+    let inputAddresses = fs.readFileSync(args.inputAddresses || '', 'ascii').split("\n").filter(l => l !== '');
+    
+    // Parcel 0.1.9 errors with > 10 input addresses, so we run multiple rounds of merging.
+    while(inputAddresses.length > maxInputFilesPerJob) {
+        inputAddresses = await merge(inputAddresses, identity, parcel);
     }
-    const outputAddresses = job.status.outputDocuments.map((o) => {return o.id;});
+
+    const outputAddresses = await aggregate(inputAddresses, identity, parcel);
     // Write the out addresses to the output file if set
     if(args.outputAddresses) {
         fs.writeFileSync(args.outputAddresses, outputAddresses.join("\n"));
