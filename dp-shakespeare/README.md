@@ -4,7 +4,7 @@ Calculate a differentially private wordcount across shakespearse plays.
 Takes as input a summary of Shakespeare's places and executes a differentially
 private summary.
 
-Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-summary/).
+Assumes you have run [Transform Shakespeare](../transform-shakespeare).
 
 ## Build
 

@@ -37,10 +37,3 @@ export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
 npm run start -- -a working-data/input.txt -o working-data/output.txt
 ```
 
-## Debugging tips
-
-The docker command executed by the job can be run locally with:
-
-```bash
-# TODO
-```
