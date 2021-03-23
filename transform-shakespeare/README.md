@@ -4,9 +4,6 @@ Applies a transform to the text of a Shakespeare plays extracted with
 [extractor](../extractor-shakespeare). The specific transformation performed
 is a word-count.
 
-Computation is performed inside a csvkit docker container which is likely
-over-kill however works for the technology demonstration.
-
 ## Build
 
 ```bash
@@ -18,8 +15,8 @@ npm run prestart
 
 ## Run
 
-A file of input addresses, one address per line, is passed in as a command line arg.
-An analogous output file is written.
+A file of input addresses, one address per line, is passed in as a command
+line arg. An analogous output file is written.
 
 ```bash
 npm run start -- -h

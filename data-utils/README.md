@@ -1,6 +1,6 @@
 # Delete dataset
 
-A parcel script to list, download and delete datasets owned by a user.
+A script to list, download and delete datasets owned by a user.
 This is a convenience script to cleanup after testing.
 
 **Deleting is irreversible.**
@@ -29,7 +29,7 @@ Options
 ```
 
 ```bash
-export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
+export PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
 npm run start
 ```

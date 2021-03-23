@@ -1,5 +1,6 @@
 # parcel-demo
- A human.ai technology demonstration using the Parcel API.
+ A human.ai technology demonstration using
+ [Oasis Lab's](https://www.oasislabs.com/) Parcel API.
 
 
 ## Differentially private Shakespeare
@@ -11,8 +12,7 @@ in the example is a summary of Shakespeares plays.
  1. Alice [uploads](file-upload) the data,
  1. Bob performs a 3-stage [differentially private](eta-shakespeare) query over the data.
 
- The repo also includes dataset handling scripts for
- [listing owned datasets](dataset-list) and [deleting test data](delete-data).
+The repo also includes [dataset handling functions](data-utils).
 
 ## Disclaimer
 

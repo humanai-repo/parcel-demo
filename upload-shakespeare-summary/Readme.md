@@ -1,13 +1,11 @@
 # Upload Shakespeare Summary
+Uploads a file to Parcel at a specified path with a specified title.
 
-Uploads a CSV to Parcel sumarising shakespeare plays.
+This has been designed to work as part of the demo to calculate the mean number
+of words in a Shakespeare play in a secure and private manner.
 
-[shakespeare_wc.csv](data/shakespeare_wc.csv) is a CSV file with two columns,
-the filename of a shakespeare play and the number of words in that file.
-
-The Upload Shakespeare Summary Parcel script uploads that file to parcel.
-
-Based on Oasis Labs [data upload example](https://github.com/oasislabs/parcel-examples/tree/latest/data-upload).
+The referenced input file is Paragraphs.txt from oss-textdb.zip downloaded from
+the [Open Shakespeare Project](https://www.opensourceshakespeare.org/downloads/).
 
 ## Build
 
@@ -19,15 +17,17 @@ npm run prestart
 
 ## Run
 
-TODO: Change the Portal address.
-
-Requires an App to be setup through the [Parcel Portal](https://portal.oasiscloud.io/) --
+Requires an App to be setup through the Parcel Portal --
 [details here](https://docs.oasiscloud.io/latest/getting-started.html).
 
 ```bash
-export OASIS_CLIENT_ID="{OASIS_CLIENT_ID}"
+export PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
 export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run start
+npm run start -- -i working-data/Paragraphs.txt -t "Shakespeare Plays"
 ```
 
-After the upload the data should be visible in the parcel portal.
+## References
+
+Open Sources Shakespeare is a George Mason University project. Full details can
+be found at
+[www.opensourceshakespeare.org](http://www.opensourceshakespeare.org).

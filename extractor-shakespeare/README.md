@@ -3,7 +3,7 @@
 Extracts per play data from shakespeare plays. This is in preparation for an
 untrusted process to intereact with the data.
 
-Assumes you have followed [Upload Shakespeare Summary](../file-upload/scropts/upload-oss.sh).
+Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-summary).
 
 ## Build
 

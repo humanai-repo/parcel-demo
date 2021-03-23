@@ -12,7 +12,7 @@ Follow the individual build instructions for the different projects.
 
 ## Run
 
-Assumes you have followed [Upload Shakespeare Summary](../file-upload/scropts/upload-oss.sh).
+Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-summary).
 
 The arguments are:
  *  a file of input addresses with one line per address, and
