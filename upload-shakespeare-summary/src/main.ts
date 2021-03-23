@@ -1,33 +1,57 @@
-// #region snippet-config
 import Parcel, { Document } from '@oasislabs/parcel';
+import { parse } from 'ts-command-line-args';
 import * as process from 'process';
 import fs from 'fs';
 
 const clientId = process.env.PARCEL_CLIENT_ID ?? '';
 const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
+interface IOArguments {
+    // TODO: Make input addresses optional and allow a single input address
+    // to be passed instead of a path to a file of addresses
+    inputPath?: string;
+    title?: string;
+    help?: boolean;
+}
+
+export const args = parse<IOArguments>(
+    {
+        inputPath: {
+            type: String, alias: 'i', optional: true,
+            description: 'Path to file to upload.'
+        },
+        title: {
+            type: String, alias: 't', optional: true,
+            description: 'Title for file.'
+        },
+        help: { type: Boolean, optional: true, alias: 'h', description: 'Prints this usage guide' },
+    },
+    {
+        helpArg: 'help',
+    },
+);
+
 async function main() {
     const parcel = new Parcel({
-      clientId: clientId,
-      privateKey: privateKey
+        clientId: clientId,
+        privateKey: privateKey
     });
 
-    const documentDetails = {title: 'Shakespeare Paragraphs'};
+    const documentDetails = { title: args.title || '' };
 
     console.log('Uploading data for our user');
-    let document: Document;
+    let doc: Document;
 
     try {
-        document = await parcel.uploadDocument(
-            await fs.promises.readFile('working-data/Paragraphs.txt'), {details: documentDetails}).finished;
+        doc = await parcel.uploadDocument(
+            await fs.promises.readFile(args.inputPath || ''),
+            { details: documentDetails }).finished;
     } catch (error: any) {
-          console.error('Failed to upload document');
-      throw error;
+        console.error('Failed to upload document');
+        throw error;
     }
-    // #endregion snippet-dataset-upload
-    console.log(`Created document ${document.id} with title ${document.details.title}`);
-
-    // TODO: Set a policy on the data.
+    console.log(
+        `Created document ${doc.id} with title ${doc.details.title}`);
 }
 
 main()
