@@ -53,9 +53,9 @@ echo "Aggregate output address $OUTPUT_ADDRESS"
 echo "DOWNLOAD OUTPUT"
 # Download the output
 cd $HOME_DIR/../data-utils
-npm run start -- -a $OUTPUT_ADDRESS -p $HOME_DIR/working-data
-OUTPUT=`ls -t1 | head -n1`
+npm run start -- -a $OUTPUT_ADDRESS -p $WORKING_DIR
+OUTPUT=`ls -t1 $WORKING_DIR | head -n1`
 
-echo "Output file $OUTPUT"
+echo "Output file $WORKING_DIR/$OUTPUT"
 
-cat $OUTPUT
+cat $WORKING_DIR/$OUTPUT
