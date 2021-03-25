@@ -4,6 +4,9 @@ Calculate a differentially private wordcount across shakespearse plays.
 Takes as input a summary of Shakespeare's places and executes a differentially
 private summary.
 
+Input format is CSV files including a column named "words" containing a
+wordcount.
+
 Assumes you have run [Transform Shakespeare](../transform-shakespeare).
 
 ## Build
@@ -16,8 +19,6 @@ npm run prestart
 ```
 
 ## Run
-
-The address of the Shakespeare summary is printed when running the upload script. It starts "0x...".
 
 ```bash
 npm run start -- -h

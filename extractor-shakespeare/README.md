@@ -9,8 +9,8 @@ Assumes you have followed [Upload Shakespeare Summary](../upload-shakespeare-sum
 
 ```bash
 npm i tslib
-npm i @oasislabs/parcel
 npm i ts-command-line-args
+npm i @oasislabs/parcel
 npm run prestart
 ```
 

@@ -12,6 +12,7 @@ the [Open Shakespeare Project](https://www.opensourceshakespeare.org/downloads/)
 ```bash
 npm i tslib
 npm i @oasislabs/parcel
+npm i ts-command-line-args
 npm run prestart
 ```
 
