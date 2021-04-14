@@ -17,7 +17,7 @@ npm run prestart
 ## Run
 
 The address of the Shakespeare Paragraph Chunks is printed when running the upload script.
-Alternatively you can run the [dataset-list](../dataset-list/) script and read it off.
+Alternatively you can run the [data-utils](../data-utils/) script and read it off.
 
 ```bash
 npm run start -- -h
