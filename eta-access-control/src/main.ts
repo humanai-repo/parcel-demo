@@ -1,4 +1,4 @@
-import Parcel, { InputDocumentSpec, OutputDocumentSpec, Job, JobSpec, JobPhase, DocumentId, IdentityId } from '@oasislabs/parcel';
+import Parcel, { InputDocumentSpec, OutputDocumentSpec, Job, JobId, JobSpec, JobPhase, Document, DocumentId, IdentityId } from '@oasislabs/parcel';
 import { parse } from 'ts-command-line-args';
 import * as fs from 'fs';
 import * as process from 'process';
@@ -52,12 +52,13 @@ export const args = parse<IOArguments>(
 
 async function submitJobSpecs(jobSpecs: JobSpec[], parcel: Parcel) {
     // Submit the Jobs
-    let jobIds = jobSpecs.map((jobSpec) => {
+    let jobIds : JobId [] = [];
+    for(let jobSpec of jobSpecs) {
         console.log(jobSpec.cmd.join(" "));
         let jobId = (await parcel.submitJob(jobSpec)).id;
         console.log(`Job ${jobId} submitted.`);
-        return jobId;
-    });
+        jobIds.push(jobId);
+    }
     
     // Wait for them to complete
     let jobRunningOrPending: boolean;
@@ -65,30 +66,31 @@ async function submitJobSpecs(jobSpecs: JobSpec[], parcel: Parcel) {
     do {
         jobRunningOrPending = false;
         await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
-        jobs = Job [];
+        jobs = [];
         for(let jobId of jobIds) {
             let job = await parcel.getJob(jobId);
             jobs.push(job);
         }
 
         for(let job of jobs) {
+            let jobId = job.id;
             console.log(`Job ${jobId} status is ${JSON.stringify(job.status)}`);
             jobRunningOrPending = jobRunningOrPending || job.status.phase === JobPhase.PENDING ||
                 job.status.phase === JobPhase.RUNNING;
             if(job.status.phase === JobPhase.FAILED) {
-                console.log(`Job ${jobId} failed with msg ${job.message}`);
-                throw Error(`Job ${jobId} failed with msg ${job.message}`);
+                console.log(`Job ${jobId} failed with msg ${job.status.message}`);
+                throw Error(`Job ${jobId} failed with msg ${job.status.message}`);
             }
         }
     } while(jobRunningOrPending);
 
     // When all jobs have completed collect the output addresses
-    let outputAddresses =
-        ([] as string[]).concat(
-            jobs.map((job) => {
-                return job.status.outputDocuments.map((o) => { return o.id; });
-            })
-        );
+    let outputAddresses : DocumentId [] = [];
+    for(let job of jobs) {
+        for(let outputDoc of job.status.outputDocuments) {
+            outputAddresses.push(outputDoc.id);
+        }
+    }
     return outputAddresses;
 }
 
@@ -221,7 +223,7 @@ async function upload(title: string, path: string, parcel: Parcel) {
     try {
         doc = await parcel.uploadDocument(
             await fs.promises.readFile(path),
-            { details: documentDetails }).finished;
+            { details: documentDetails, toApp: undefined }).finished;
     } catch (error: any) {
         console.error('Failed to upload document');
         throw error;
