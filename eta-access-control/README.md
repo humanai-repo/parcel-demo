@@ -29,7 +29,9 @@ Options
 ```
 
 ```bash
-export PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
-export OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
-npm run start  -- -a working-data/input.txt -o working-data/output.txt -n 43
+export RESEARCHER_PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
+export RESEARCHER_OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
+export DATA_OWNER_PARCEL_CLIENT_ID="{PARCEL_CLIENT_ID}"
+export DATA_OWNER_OASIS_API_PRIVATE_KEY={OASIS_API_PRIVATE_KEY}
+npm run start  -- -i working-data/Paragraphs10.txt -o working-data -n 10 -t "10 Shakespeare Plays"
 ```

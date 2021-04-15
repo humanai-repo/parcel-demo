@@ -67,14 +67,14 @@ async function submitJobSpecs(jobSpecs: JobSpec[], parcel: Parcel) {
         jobRunningOrPending = false;
         await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
         jobs = [];
+        console.log('Getting job statuses');
         for(let jobId of jobIds) {
             let job = await parcel.getJob(jobId);
+            console.log(`Job ${jobId} status is ${JSON.stringify(job.status.phase)}`);
             jobs.push(job);
         }
-
         for(let job of jobs) {
             let jobId = job.id;
-            console.log(`Job ${jobId} status is ${JSON.stringify(job.status)}`);
             jobRunningOrPending = jobRunningOrPending || job.status.phase === JobPhase.PENDING ||
                 job.status.phase === JobPhase.RUNNING;
             if(job.status.phase === JobPhase.FAILED) {
@@ -250,10 +250,16 @@ async function download(inputAddresses: string[], path: string,
 
 async function setXAccessControls(parcel : Parcel) {
     // TODO
+    // MUST TAG DATA as temporary
 }
 
 async function setFxAccessControls(parcel : Parcel) {
     // TODO
+    // MUST TAG DATA as temporary
+}
+
+async function clearTemporaryData(parcel : Parcel) {
+
 }
 
 async function main() {
@@ -275,6 +281,7 @@ async function main() {
     const inputPath = args.inputPath || '';
     const outputPath = args.outputPath || '';
 
+    console.log('Retrieving identities');
     const dataOwnerIdentity = (await dataOwnerParcel.getCurrentIdentity()).id;
     const researcherIdentity = (await reseacherParcel.getCurrentIdentity()).id;
 
@@ -307,12 +314,15 @@ async function main() {
 
     await download(outputs, outputPath, reseacherParcel);
 
-    console.log('Retrieving identity');
+    await clearTemporaryData(dataOwnerParcel);
 }
 
+main();
+/*
 main()
     .then(() => console.log('All done!'))
     .catch((err) => {
         console.log(`Error in main(): ${err.stack || JSON.stringify(err)}`);
         return process.exit(1);
     });
+*/
