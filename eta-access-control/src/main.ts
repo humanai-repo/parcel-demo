@@ -1,4 +1,7 @@
 import Parcel, { InputDocumentSpec, OutputDocumentSpec, Job, JobId, JobSpec, JobPhase, Document, DocumentId, IdentityId } from '@oasislabs/parcel';
+import { Condition } from '@oasislabs/parcel/lib/condition.js';
+import { GrantCreateParams } from '@oasislabs/parcel/lib/grant.js';
+
 import { parse } from 'ts-command-line-args';
 import * as fs from 'fs';
 import * as process from 'process';
@@ -58,6 +61,8 @@ async function submitJobSpecs(jobSpecs: JobSpec[], parcel: Parcel) {
         let jobId = (await parcel.submitJob(jobSpec)).id;
         console.log(`Job ${jobId} submitted.`);
         jobIds.push(jobId);
+        // Add a 5 second wait between submitting jobs to (hopefully) reduce timeouts.
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // eslint-disable-line no-promise-executor-return
     }
     
     // Wait for them to complete
@@ -70,8 +75,14 @@ async function submitJobSpecs(jobSpecs: JobSpec[], parcel: Parcel) {
         console.log('Getting job statuses');
         for(let jobId of jobIds) {
             let job = await parcel.getJob(jobId);
-            console.log(`Job ${jobId} status is ${JSON.stringify(job.status.phase)}`);
-            jobs.push(job);
+            if(job.status === null) {
+                console.log(`Error reading ${jobId}`);
+                jobRunningOrPending = true;
+            }
+            else {
+                console.log(`Job ${jobId} status is ${JSON.stringify(job.status.phase)}`);
+                jobs.push(job);
+            }
         }
         for(let job of jobs) {
             let jobId = job.id;
@@ -248,9 +259,58 @@ async function download(inputAddresses: string[], path: string,
     }
 }
 
-async function setXAccessControls(parcel : Parcel) {
-    // TODO
-    // MUST TAG DATA as temporary
+async function getOwnedDocuments(parcel : Parcel, identity : IdentityId) {
+    // Get all the documents accessible
+    let documents : Document [] = [];
+    //TODO
+    return documents;
+} 
+
+async function setXAccessControls(parcel : Parcel, identity : IdentityId) {
+    // Identify all data set by an Extract job that has not already been tagged.
+    let allDocuments = await getOwnedDocuments(parcel, identity);
+    // Filter out documents already tagged as part of a group
+    let unGroupedDocuments = allDocuments.filter(
+        (doc) => doc.details.tags === undefined || !doc.details.tags.includes("grouped"));
+    // Group documents by the job that created them
+    let documentGroups : Map<JobId, Array<Document>> = new Map();
+    for(let doc of unGroupedDocuments) {
+        let job = doc.originatingJob;
+        if(job) {
+            if(!documentGroups.has(job)) {
+                documentGroups.set(job, []);
+            }
+            let docArray = documentGroups.get(job);
+            if(docArray)docArray.push(doc);
+        }
+    }
+    // Assume that any job that output multiple docs was an extract job
+    // This is really messy and not acceptable. It means extract jobs cannot be parralellised
+    // and creates huge assumptions. Really the output of Extract Jobs should be tagged as such.
+    let multiDocumentGroups : Map<JobId, Array<Document>> =
+        new Map(
+            Array.from(documentGroups.entries()).filter(([k,v]) => v.length > 1));
+    // Tag data as both temporary and part of a single group of data that need to be computed as a unit
+    for(let [jobId, documents] of multiDocumentGroups) {
+        let nDocs = documents.length;
+        let creator = documents[0].creator;
+        for(let i in documents) {
+            let tags = ["temp", "grouped", `item:{i}of{nDocs}_{jobId}`, `group:{jobId}`];
+            console.log(`Updating Document {documents[i].id} with tags {tags}`);
+            await parcel.updateDocument(documents[i].id, {owner: identity, details: {tags: tags}});
+        }
+        let grantCondition : Condition = 
+            {$and : [
+                {'document.details.tags': {$any: {$eq : `group:{jobId}`}}}, // This group
+                // There is currently a bug preventing 
+                //{'job.spec.inputs': {$len: {$eq : 1}}}, // One input
+                //{'job.spec.outputs': {$len: {$eq : 1}}}, // One output
+                //{'job.spec.outputs': {$all: {$eq : {mountPath : 'output', owner: identity}}}}, // Output owned by DocOwner (ideally you wouldn't specify the mount path)
+            ]};
+        let grantParams : GrantCreateParams = {grantee: creator, condition: grantCondition};
+        console.log(`Creating grant {grantParams}`);
+        await parcel.createGrant(grantParams);
+    }
 }
 
 async function setFxAccessControls(parcel : Parcel) {
@@ -283,7 +343,9 @@ async function main() {
 
     console.log('Retrieving identities');
     const dataOwnerIdentity = (await dataOwnerParcel.getCurrentIdentity()).id;
+    console.log(`DataOwner Identity: ${dataOwnerIdentity}`);
     const researcherIdentity = (await reseacherParcel.getCurrentIdentity()).id;
+    console.log(`Researcher Identity: ${researcherIdentity}`);
 
     const inputs = await upload(title, inputPath, dataOwnerParcel);
 
@@ -293,7 +355,7 @@ async function main() {
     // Can an alternative image be run
     // Can an alternative owner be set on the output
 
-    const xDo = await setXAccessControls(dataOwnerParcel);
+    const xDo = await setXAccessControls(dataOwnerParcel, dataOwnerIdentity);
 
     // test -- are xR and xDo the same?
 
