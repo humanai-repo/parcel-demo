@@ -7,8 +7,6 @@ const clientId = process.env.PARCEL_CLIENT_ID ?? '';
 const privateKey = JSON.parse(process.env.OASIS_API_PRIVATE_KEY ?? '');
 
 interface IOArguments {
-    // TODO: Make input addresses optional and allow a single input address
-    // to be passed instead of a path to a file of addresses
     inputPath?: string;
     title?: string;
     help?: boolean;
@@ -44,8 +42,9 @@ async function main() {
 
     try {
         doc = await parcel.uploadDocument(
-            await fs.promises.readFile(args.inputPath || ''),
-            { details: documentDetails }).finished;
+            //await fs.promises.readFile(args.inputPath || ''),
+            fs.createReadStream(args.inputPath || ''),
+            { details: documentDetails, toApp: undefined }).finished;
     } catch (error: any) {
         console.error('Failed to upload document');
         throw error;

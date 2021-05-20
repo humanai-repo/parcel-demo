@@ -105,3 +105,6 @@ dist
 
 # Working data
 working-data/
+
+# Generated binary data
+bin/
