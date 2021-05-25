@@ -40,12 +40,14 @@ async function main() {
     });
 
     // List owned documents first
-    const documentPage = await parcel.listDocuments();
+    const identity = (await parcel.getCurrentIdentity()).id;
+    const documentPage = await parcel.listDocuments({owner: identity, pageSize: 500});
 
     let outputAddresses : string [] = [];
     documentPage.results.forEach(function (document : Document) {
         // TODO: Skip deactivated datasets
-        console.log(`${document.id} ${document.owner} ${document.createdAt.toISOString()} ${document.details.title} ${document.size}`);
+        let title = (document.details)?document.details.title:"-";
+        console.log(`${document.id} ${document.owner} ${document.createdAt.toISOString()} ${title} ${document.size}`);
         outputAddresses.push(document.id);
     });
 

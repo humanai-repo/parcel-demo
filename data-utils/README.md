@@ -1,4 +1,4 @@
-# Delete dataset
+# Data Utils
 
 A script to list, download and delete datasets owned by a user.
 This is a convenience script to cleanup after testing.
