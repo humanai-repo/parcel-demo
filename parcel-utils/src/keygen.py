@@ -34,7 +34,7 @@ def main(_):
 
   if _FLAG_KEY_OUTPUT_FILE.value:
     with open(_FLAG_KEY_OUTPUT_FILE.value, 'w') as f:
-      f.write(key.export_public())
+      f.write(key.export_private())
 
   # Output key details.
   print(key.export_public())
