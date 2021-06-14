@@ -16,11 +16,11 @@ _FLAG_KEY_OUTPUT_FILE = flags.DEFINE_string('output_path',
 def generate(key_id: str) -> jwk.JWK:
   """Generate a key pair.
 
-    Args:
-      key_id: Optional key identifier, uses random id if not provided.
+  Args:
+    key_id: Optional key identifier, uses random id if not provided.
 
-    Returns:
-      The generated key.
+  Returns:
+    The generated key.
   """
   return jwk.JWK.generate(alg='ES256',
                           kty='EC',
